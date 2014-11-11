@@ -48,7 +48,7 @@ echo "cat $ORIG | grep -v $SCRIPTNAME >> /etc/hosts" >> $SCRIPT
 # - remove whitespaces, one host per line
 # - sort, remove duplicates
 # - awk magic - optimize hosts size using aliases (max len = 160, max aliases = 9)
-echo "curl -s $BLOCKLIST | grep -vw localhost\\|broadcasthost | grep ^[01] | sed -e 's/^[0127]*.0.0.[01]\\s//' -e 's/#.*//' | tr -d '\r' | tr ' \t' '\n' | grep -v ^$ | sort -u | awk '{if(length(s)+length(\$1)>(160-9)||cnt>=9){print \"0.0.0.0 \" s;cnt=1;s=\$1}else{s=s \" \" \$1;cnt++}}END{print \"0.0.0.0 \" s}' >> /etc/hosts" >> $SCRIPT
+echo "curl -s $BLOCKLIST | grep -vw localhost\\|broadcasthost | grep ^[01] | sed -e 's/^[0127]*.0.0.[01]\\s//' -e 's/#.*//' | tr -d '\r' | tr ' \t' '\n' | grep -v ^$ | sort -u | awk 'BEGIN{z=s=\"0.0.0.0\"}{if(length(s)+length(\$1)>(160-1)||cnt>=9){print s;cnt=1;s=z \" \" \$1}else{s=s \" \" \$1;cnt++}}END{print s}' >> /etc/hosts" >> $SCRIPT
 chmod +x $SCRIPT
 $SCRIPT
 
