@@ -117,6 +117,16 @@ check() {
     if [[ "$answer" != "y" && "$answer" != "yes" ]]; then
       exit 1
     else
+      # for updating from v. 1.0
+      if [ -f /usr/bin/hostsblock-update ]; then
+        rm -f /etc/cron.weekly/hostsblock-update
+        rm -f /usr/bin/hostsblock-update
+        if [ -f /etc/hosts.orig ]; then
+          sed -i "/hostsblock-update/d" /etc/hosts.orig
+          mv /etc/hosts.orig /etc/hosts
+        fi
+      fi
+
       install
     fi
   else
