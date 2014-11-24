@@ -4,7 +4,7 @@ script_path=$0
 what_todo=$1
 param2=$2
 
-VER="1.2"
+VER="1.2.1"
 DESC="blocking manager"
 
 HOSTS_ORIG=/etc/hosts.orig
@@ -21,12 +21,12 @@ if [ "$EDITOR" = "" ]; then
 fi
 
 reset_blocklist() {
-echo "
+cat > $BLOCKLIST <<-EOF
 http://winhelp2002.mvps.org/hosts.txt
 https://jansal.googlecode.com/svn/trunk/adblock/hosts
 http://hosts-file.net/.%5Cad_servers.txt
 http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
-" > $BLOCKLIST
+EOF
 sed -i "/^$/d" $BLOCKLIST
 }
 
@@ -68,7 +68,7 @@ on() {
 off() {
   echo "Turning off..."
   mv $HOSTS $HOSTS_SAVED
-  mv $HOSTS_ORIG $HOSTS 
+  mv $HOSTS_ORIG $HOSTS
   sed -i "/$SCRIPTNAME/d" $HOSTS
   sed -i '/^$/d' $HOSTS
 }
@@ -86,9 +86,10 @@ install() {
   on
 
   echo "Creating a script for auto-updating the list of blocked hosts..."
-  echo "
-  #!/bin/bash
-  $SCRIPTNAME update " > $UPDATER
+  cat > $UPDATER <<-EOF
+#!/bin/bash
+$SCRIPTNAME update
+EOF
   chmod +x $UPDATER
 }
 
@@ -107,13 +108,12 @@ version() {
 check() {
   if [ $(whoami) != "root" ]; then
     echo "You should be root to perform this command."
-    echo -e "Run: \"sudo $script_path \" \n"
+    echo -e "Run: \"sudo $script_path\"\n"
     exit -1
   fi
 
-  if [ ! -f $BIN_SCRIPT ]; then 
-    printf "$SCRIPTNAME is not installed. Do you want to install it? (y/n) "
-    read answer
+  if [ ! -f $BIN_SCRIPT ]; then
+    read -p "$SCRIPTNAME is not installed. Do you want to install it? (y/n) " answer
     if [[ "$answer" != "y" && "$answer" != "yes" ]]; then
       exit 1
     else
@@ -132,14 +132,12 @@ check() {
   else
     VER_installed=`version`
     if [[ "$VER_installed" != "$VER" ]]; then
-
       if [[ "$VER_installed" > "$VER" ]]; then
-        echo -e "Error: You have $SCRIPTNAME v.$VER_installed . Version of the started instance is $VER"
+        echo -e "Error: You have $SCRIPTNAME v.$VER_installed . Version of the started instance is $VER" 1>&2
         echo -e "If you want to do smth run \"sudo $SCRIPTNAME\""
         exit 1
       else
-        printf "Do you want to update? V.$VER_installed --> v.$VER (y/n) "
-        read answer
+        read -p "Do you want to update? V.$VER_installed --> v.$VER (y/n) " answer
         if [[ $answer != "y" && $answer != "yes" ]]; then
           exit 1
         fi
@@ -160,31 +158,31 @@ case $what_todo in
     status
     if [ $? = "1" ]; then
       update_blocklist
-    else  
-      echo "Error: $SCRIPTNAME has to be turned on before updating the blocklist"
+    else
+      echo "Error: $SCRIPTNAME has to be turned on before updating the blocklist" 1>&2
       exit 1
     fi
     ;;
-	on | start)
+  on | start)
     status
     if [ $? = "0" ]; then
-      on	
+      on
     fi
-		;;
-	off | stop)
+    ;;
+  off | stop)
     status
     if [ $? = "1" ]; then
       off
     fi
-		;;
-	status)
+    ;;
+  status)
     status
     if [ $? = "1" ]; then
       echo "$SCRIPTNAME is turned on"
     else
       echo "$SCRIPTNAME is turned off"
     fi
-		;;
+    ;;
   edit)
     status
     if [ $? = "1" ]; then
@@ -198,23 +196,20 @@ case $what_todo in
   version | -v | --version)
     echo "Current installed version is:" `version`
     ;;
-	help | --help | h | -h)
-		echo -e "
-$SCRIPTNAME --sites $DESC
-\ton\t--turn on $DESC
-\toff\t--turn off $DESC
-\tupdate\t--update the list of blocked hosts
-\tstatus\t--find out the current status
-\tremove\t--remove
-\tedit\t--edit /etc/hosts
-\tversion\t--find out version
-"
-		;;
-	*)
-		echo "Usage: $script_path { on | off | update | status | remove | edit | version | help }"
-		exit 1
-		;;
+  *)
+    cat <<-EOF
+Usage: $script_path ( on | off | update | status | remove | edit | version | help )
+Blocking manager for removing ads from websites.
+
+Description of commands:
+  on        Turn on $DESC
+  off       Turn off $DESC
+  update    Update the list of blocked hosts
+  status    Find out the current status
+  remove    Remove
+  edit      Edit /etc/hosts
+  version   Find out version
+  help      Get help
+EOF
+    ;;
 esac
-
-
-
