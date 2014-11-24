@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 script_path=$0
 what_todo=$1
@@ -87,7 +87,7 @@ install() {
 
   echo "Creating a script for auto-updating the list of blocked hosts..."
   cat > $UPDATER <<-EOF
-#!/bin/bash
+#!/bin/sh
 $SCRIPTNAME update
 EOF
   chmod +x $UPDATER
