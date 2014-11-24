@@ -196,7 +196,7 @@ case $what_todo in
     ;;
   *)
     cat <<-EOF
-Usage: $script_path ( on | off | update | status | remove | edit | version | help )
+Usage: $(basename "$script_path") ( on | off | update | status | remove | edit | version | help )
 Blocking manager for removing ads from websites.
 
 Description of commands:
