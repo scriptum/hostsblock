@@ -16,18 +16,16 @@ CRON_DIR=/etc/cron.weekly
 UPDATER=$CRON_DIR/$SCRIPTNAME
 BLOCKLIST=/etc/hosts.blocklist
 
-if [ "$EDITOR" = "" ]; then
-  EDITOR="vim"
-fi
+[[ -z $EDITOR ]] && EDITOR="vim"
 
 reset_blocklist() {
-cat > $BLOCKLIST <<-EOF
+  cat > $BLOCKLIST <<-EOF
 http://winhelp2002.mvps.org/hosts.txt
 https://jansal.googlecode.com/svn/trunk/adblock/hosts
 http://hosts-file.net/.%5Cad_servers.txt
 http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
 EOF
-sed -i "/^$/d" $BLOCKLIST
+  sed -i "/^$/d" $BLOCKLIST
 }
 
 remove() {
@@ -35,7 +33,7 @@ remove() {
   rm -f $UPDATER &> /dev/null
   rm -f $BIN_SCRIPT &> /dev/null
   rm -f $BLOCKLIST &> /dev/null
-  if [ -f "$HOSTS_ORIG" ]; then
+  if [[ -f "$HOSTS_ORIG" ]]; then
     mv $HOSTS_ORIG $HOSTS
     sed -i "/$SCRIPTNAME/d" $HOSTS
   fi
@@ -94,7 +92,7 @@ EOF
 }
 
 status() {
-  if [ -f $HOSTS_ORIG ]; then
+  if [[ -f $HOSTS_ORIG ]]; then
     return 1
   else
     return 0
@@ -106,22 +104,22 @@ version() {
 }
 
 check() {
-  if [ $(whoami) != "root" ]; then
+  if [[ $(whoami) != "root" ]]; then
     echo "You should be root to perform this command."
     echo -e "Run: \"sudo $script_path\"\n"
     exit -1
   fi
 
-  if [ ! -f $BIN_SCRIPT ]; then
+  if [[ ! -f $BIN_SCRIPT ]]; then
     read -p "$SCRIPTNAME is not installed. Do you want to install it? (y/n) " answer
     if [[ "$answer" != "y" && "$answer" != "yes" ]]; then
       exit 1
     else
       # for updating from v. 1.0
-      if [ -f /usr/bin/hostsblock-update ]; then
+      if [[ -f /usr/bin/hostsblock-update ]]; then
         rm -f /etc/cron.weekly/hostsblock-update
         rm -f /usr/bin/hostsblock-update
-        if [ -f /etc/hosts.orig ]; then
+        if [[ -f /etc/hosts.orig ]]; then
           sed -i "/hostsblock-update/d" /etc/hosts.orig
           mv /etc/hosts.orig /etc/hosts
         fi
@@ -156,7 +154,7 @@ case $what_todo in
     ;;
   update)
     status
-    if [ $? = "1" ]; then
+    if [[ $? = "1" ]]; then
       update_blocklist
     else
       echo "Error: $SCRIPTNAME has to be turned on before updating the blocklist" 1>&2
@@ -165,19 +163,19 @@ case $what_todo in
     ;;
   on | start)
     status
-    if [ $? = "0" ]; then
+    if [[ $? = "0" ]]; then
       on
     fi
     ;;
   off | stop)
     status
-    if [ $? = "1" ]; then
+    if [[ $? = "1" ]]; then
       off
     fi
     ;;
   status)
     status
-    if [ $? = "1" ]; then
+    if [[ $? = "1" ]]; then
       echo "$SCRIPTNAME is turned on"
     else
       echo "$SCRIPTNAME is turned off"
@@ -185,7 +183,7 @@ case $what_todo in
     ;;
   edit)
     status
-    if [ $? = "1" ]; then
+    if [[ $? = "1" ]]; then
       off
       $EDITOR $HOSTS
       on
