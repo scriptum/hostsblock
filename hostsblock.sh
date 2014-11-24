@@ -31,7 +31,7 @@ sed -i "/^$/d" $BLOCKLIST
 }
 
 remove() {
-  echo "Removing $SCRIPTNAME ..."
+  echo "Removing $SCRIPTNAME..."
   rm -f $UPDATER &> /dev/null
   rm -f $BIN_SCRIPT &> /dev/null
   rm -f $BLOCKLIST &> /dev/null
