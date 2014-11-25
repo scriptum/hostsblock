@@ -138,8 +138,8 @@ version() {
 
 check() {
   if [[ $(whoami) != "root" ]]; then
-    echo "You should be root to perform this command."
-    echo -e "Run: \"sudo $script_path\"\n"
+    echo "You need to be root to perform this command." 1>&2
+    echo "Run: \"sudo $script_path\"" 1>&2
     exit -1
   fi
 
@@ -168,7 +168,7 @@ check() {
         echo -e "If you want to do smth run \"sudo $SCRIPTNAME\""
         exit 1
       else
-        read -p "Do you want to update? V.$VER_installed --> v.$VER (y/n) " answer
+        read -p "Do you want to update? v.$VER_installed --> v.$VER (y/n) " answer
         if [[ $answer != "y" && $answer != "yes" ]]; then
           exit 1
         fi
