@@ -4,7 +4,7 @@ script_path=$0
 what_todo=$1
 param2=$2
 
-VER="1.2.2"
+VER="1.2.3"
 DESC="blocking manager"
 
 HOSTS_ORIG=/etc/hosts.orig
@@ -157,15 +157,14 @@ check() {
           mv /etc/hosts.orig /etc/hosts
         fi
       fi
-
       install
     fi
   else
     VER_installed=$(version)
     if [[ "$VER_installed" != "$VER" ]]; then
       if [[ "$VER_installed" > "$VER" ]]; then
-        echo -e "Error: You have $SCRIPTNAME v.$VER_installed . Version of the started instance is $VER" 1>&2
-        echo -e "If you want to do smth run \"sudo $SCRIPTNAME\""
+        echo "Error: You have $SCRIPTNAME v.$VER_installed. Version of the started instance is $VER" 1>&2
+        echo "If you want to do smth run \"sudo $SCRIPTNAME\"" 1>&2
         exit 1
       else
         read -p "Do you want to update? v.$VER_installed --> v.$VER (y/n) " answer
