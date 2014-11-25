@@ -16,7 +16,7 @@ CRON_DIR=/etc/cron.weekly
 UPDATER=$CRON_DIR/$SCRIPTNAME
 BLOCKLIST=/etc/hosts.blocklist
 
-[[ -z $EDITOR ]] && EDITOR="vim"
+[ -z $EDITOR ] && EDITOR="vim"
 
 reset_blocklist() {
   cat > $BLOCKLIST <<EOF
@@ -30,7 +30,7 @@ EOF
 remove() {
   echo "Removing $SCRIPTNAME..."
   rm -f $UPDATER $BIN_SCRIPT $BLOCKLIST &> /dev/null
-  if [[ -f "$HOSTS_ORIG" ]]; then
+  if [ -f "$HOSTS_ORIG" ]; then
     mv $HOSTS_ORIG $HOSTS
     sed -i "/$SCRIPTNAME/d" $HOSTS
   fi
@@ -87,6 +87,7 @@ update_blocklist() {
   done
   rm -f $HOSTS $TMP
   mv $HOSTS_TMP $HOSTS
+  chmod +r $HOSTS
 }
 
 on() {
@@ -125,7 +126,7 @@ EOF
 }
 
 status() {
-  if [[ -f $HOSTS_ORIG ]]; then
+  if [ -f $HOSTS_ORIG ]; then
     return 1
   else
     return 0
@@ -137,22 +138,22 @@ version() {
 }
 
 check() {
-  if [[ $(whoami) != "root" ]]; then
+  if [ $(whoami) != "root" ]; then
     echo "You need to be root to perform this command." 1>&2
     echo "Run: \"sudo $script_path\"" 1>&2
     exit 1
   fi
 
-  if [[ ! -f $BIN_SCRIPT ]]; then
+  if [ ! -f $BIN_SCRIPT ]; then
     read -p "$SCRIPTNAME is not installed. Do you want to install it? (y/n) " answer
-    if [[ "$answer" != "y" && "$answer" != "yes" ]]; then
+    if [ "$answer" != "y" && "$answer" != "yes" ]; then
       exit 1
     else
       # for updating from v. 1.0
-      if [[ -f /usr/bin/hostsblock-update ]]; then
+      if [ -f /usr/bin/hostsblock-update ]; then
         rm -f /etc/cron.weekly/hostsblock-update
         rm -f /usr/bin/hostsblock-update
-        if [[ -f /etc/hosts.orig ]]; then
+        if [ -f /etc/hosts.orig ]; then
           sed -i "/hostsblock-update/d" /etc/hosts.orig
           mv /etc/hosts.orig /etc/hosts
         fi
@@ -161,14 +162,14 @@ check() {
     fi
   else
     VER_installed=$(version)
-    if [[ "$VER_installed" != "$VER" ]]; then
-      if [[ "$VER_installed" > "$VER" ]]; then
+    if [ "$VER_installed" != "$VER" ]; then
+      if [ "$VER_installed" != "$(printf "$VER_installed\n$VER" | sort | head -1)" ]; then
         echo "Error: You have $SCRIPTNAME v.$VER_installed. Version of the started instance is $VER" 1>&2
         echo "If you want to do smth run \"sudo $SCRIPTNAME\"" 1>&2
         exit 1
       else
         read -p "Do you want to update? v.$VER_installed --> v.$VER (y/n) " answer
-        if [[ $answer != "y" && $answer != "yes" ]]; then
+        if [ $answer != "y" -a $answer != "yes" ]; then
           exit 1
         fi
       fi
