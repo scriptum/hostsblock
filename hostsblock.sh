@@ -186,42 +186,41 @@ case $what_todo in
     remove
     ;;
   update)
-    status
-    if [[ $? = "1" ]]; then
-      update_blocklist
-    else
+    if status; then
       echo "Error: $SCRIPTNAME has to be turned on before updating the blocklist" 1>&2
       exit 1
+    else
+      update_blocklist
     fi
     ;;
   on | start)
-    status
-    if [[ $? = "0" ]]; then
+    if status; then
       on
+    else
+      echo "Already turned on"
     fi
     ;;
   off | stop)
-    status
-    if [[ $? = "1" ]]; then
+    if status; then
+      echo "Already turned off"
+    else
       off
     fi
     ;;
   status)
-    status
-    if [[ $? = "1" ]]; then
-      echo "$SCRIPTNAME is turned on"
-    else
+    if status; then
       echo "$SCRIPTNAME is turned off"
+    else
+      echo "$SCRIPTNAME is turned on"
     fi
     ;;
   edit)
-    status
-    if [[ $? = "1" ]]; then
+    if status; then
+      $EDITOR $HOSTS
+    else
       off
       $EDITOR $HOSTS
       on
-    else
-      $EDITOR $HOSTS
     fi
     ;;
   version | -v | --version)
@@ -233,8 +232,8 @@ Usage: $(basename "$script_path") ( on | off | update | status | remove | edit |
 Blocking manager for removing ads from websites.
 
 Description of commands:
-  on                    turn on $DESC
-  off                   turn off $DESC
+  on | start            turn on $DESC
+  off | stop            turn off $DESC
   update                update the list of blocked hosts
   status                find out the current status
   remove                remove
