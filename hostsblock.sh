@@ -140,7 +140,7 @@ check() {
   if [[ $(whoami) != "root" ]]; then
     echo "You need to be root to perform this command." 1>&2
     echo "Run: \"sudo $script_path\"" 1>&2
-    exit -1
+    exit 1
   fi
 
   if [[ ! -f $BIN_SCRIPT ]]; then
