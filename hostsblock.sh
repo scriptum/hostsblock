@@ -4,7 +4,7 @@ script_path=$0
 what_todo=$1
 param2=$2
 
-VER="1.2.3"
+VER="1.2.4"
 DESC="blocking manager"
 
 HOSTS_ORIG=/etc/hosts.orig
@@ -15,6 +15,7 @@ BIN_SCRIPT=/usr/bin/$SCRIPTNAME
 CRON_DIR=/etc/cron.weekly
 UPDATER=$CRON_DIR/$SCRIPTNAME
 BLOCKLIST=/etc/hosts.blocklist
+URL=https://raw.githubusercontent.com/scriptum/hostsblock/master/hostsblock.sh
 
 [ -z $EDITOR ] && EDITOR="vim"
 
@@ -120,6 +121,15 @@ install() {
   echo "Creating a script for auto-updating the list of blocked hosts..."
   cat > $UPDATER <<EOF
 #!/bin/sh
+VER=$VER
+TMP=\$(mktemp)
+if curl -s $URL > \$TMP; then
+  VER_NEW=\$(awk -F'"' '/^VER/{print \$2}' \$TMP)
+  if [ -n "\$VER_NEW" -a "\$VER" != "\$VER_NEW" ]
+    then yes | sh \$TMP && exit 0
+  fi
+fi
+rm -f \$TMP
 $SCRIPTNAME update
 EOF
   chmod +x $UPDATER
@@ -135,6 +145,10 @@ status() {
 
 version() {
   awk -F'"' '/^VER/{print $2}' $BIN_SCRIPT
+}
+
+vercmp() {
+  [ "$1" != "$(printf "$1\n$2" | sort | head -1)" ]
 }
 
 check() {
@@ -163,7 +177,7 @@ check() {
   else
     VER_installed=$(version)
     if [ "$VER_installed" != "$VER" ]; then
-      if [ "$VER_installed" != "$(printf "$VER_installed\n$VER" | sort | head -1)" ]; then
+      if vercmp "$VER_installed" "$VER"; then
         echo "Error: You have $SCRIPTNAME v.$VER_installed. Version of the started instance is $VER" 1>&2
         echo "If you want to do smth run \"sudo $SCRIPTNAME\"" 1>&2
         exit 1
