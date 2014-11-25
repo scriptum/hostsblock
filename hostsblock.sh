@@ -30,7 +30,7 @@ EOF
 
 remove() {
   echo "Removing $SCRIPTNAME..."
-  rm -f $UPDATER $BIN_SCRIPT $BLOCKLIST &> /dev/null
+  rm -f $UPDATER $BIN_SCRIPT $BLOCKLIST 2> /dev/null
   if [ -f "$HOSTS_ORIG" ]; then
     mv $HOSTS_ORIG $HOSTS
     sed -i "/$SCRIPTNAME/d" $HOSTS
