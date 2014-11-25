@@ -161,7 +161,7 @@ check() {
       install
     fi
   else
-    VER_installed=`version`
+    VER_installed=$(version)
     if [[ "$VER_installed" != "$VER" ]]; then
       if [[ "$VER_installed" > "$VER" ]]; then
         echo -e "Error: You have $SCRIPTNAME v.$VER_installed . Version of the started instance is $VER" 1>&2
