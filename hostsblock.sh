@@ -2,9 +2,8 @@
 
 script_path=$0
 what_todo=$1
-param2=$2
 
-VER="1.2.4"
+VER="1.2.5"
 DESC="blocking manager"
 
 HOSTS_ORIG=/etc/hosts.orig
@@ -15,6 +14,7 @@ BIN_SCRIPT=/usr/bin/$SCRIPTNAME
 CRON_DIR=/etc/cron.weekly
 UPDATER=$CRON_DIR/$SCRIPTNAME
 BLOCKLIST=/etc/hosts.blocklist
+WHITELIST=/etc/hosts.whitelist
 URL=https://raw.githubusercontent.com/scriptum/hostsblock/master/hostsblock.sh
 
 [ -z $EDITOR ] && EDITOR="vim"
@@ -25,6 +25,10 @@ http://winhelp2002.mvps.org/hosts.txt
 https://jansal.googlecode.com/svn/trunk/adblock/hosts
 http://hosts-file.net/.%5Cad_servers.txt
 http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
+EOF
+  #put this because yandex maps now works only with yastatic.net
+  cat > $WHITELIST <<EOF
+yastatic.net
 EOF
 }
 
@@ -51,41 +55,40 @@ update_blocklist() {
 
   sed "/^$/d" $BLOCKLIST | while read line; do
     echo "Processing $line..."
-    if curl -s "$line" > $TMP; then
-      # - remove localhost and broadcasthost strings
-      grep -vw localhost\|broadcasthost $TMP | \
-      # - keep only IP
-      grep ^[01] | \
-      # - remove IP and comments (extract hosts only)
-      sed -e 's/^[0127]*.0.0.[01]\s//' -e 's/#.*//' | \
-      # - remove whitespaces, one host per line
-      tr -d '\r' | tr ' \t' '\n' | \
-      # - sort, remove duplicates
-      grep -v ^$ | sort -u | \
-      # - awk magic - optimize hosts size using aliases (max len = 160, max aliases = 9)
-      awk '
-        BEGIN {
-          z=s="0.0.0.0"
-        }
-        {
-          if(length(s) + length($1) > (160 - 1) || cnt >= 9) {
-            print s;
-            cnt=1;
-            s=z " " $1
-          } else {
-            s=s " " $1;
-            cnt++
-          }
-        }
-        END {
-          print s
-        }' >> $HOSTS_TMP
-    else
+    if ! curl -s "$line" >> $TMP; then
       echo "Error while downloading '$line'" 1>&2
       echo "Check your connection." 1>&2
       bug_report
     fi
   done
+  # - remove localhost and broadcasthost strings
+  grep -vw localhost\|broadcasthost $TMP | \
+  # - keep only IP
+  grep ^[01] | \
+  # - remove IP and comments (extract hosts only)
+  sed -e 's/^[0127]*.0.0.[01]\s//' -e 's/#.*//' | \
+  # - remove whitespaces, one host per line
+  tr -d '\r' | tr ' \t' '\n' | \
+  # - sort, remove duplicates
+  grep -v ^$ | sort -u | grep -Fvxf $WHITELIST \
+  # - awk magic - optimize hosts size using aliases (max len = 160, max aliases = 9)
+  awk '
+    BEGIN {
+      z=s="0.0.0.0"
+    }
+    {
+      if(length(s) + length($1) > (160 - 1) || cnt >= 9) {
+        print s;
+        cnt=1;
+        s=z " " $1
+      } else {
+        s=s " " $1;
+        cnt++
+      }
+    }
+    END {
+      print s
+    }' >> $HOSTS_TMP
   rm -f $HOSTS $TMP
   mv $HOSTS_TMP $HOSTS
   chmod +r $HOSTS
@@ -237,21 +240,31 @@ case $what_todo in
       on
     fi
     ;;
+  whitelist)
+    if status; then
+      $EDITOR $WHITELIST
+    else
+      off
+      $EDITOR $WHITELIST
+      on
+    fi
+    ;;
   version | -v | --version)
     echo "Current installed version is: $(version)"
     ;;
   *)
     cat <<EOF
-Usage: $(basename "$script_path") ( on | off | update | status | remove | edit | version | help )
+Usage: $(basename "$script_path") ( on | off | update | status | remove | edit | whitelist | version | help )
 Blocking manager for removing ads from websites.
 
 Description of commands:
   on | start            turn on $DESC
   off | stop            turn off $DESC
-  update                update the list of blocked hosts
-  status                find out the current status
-  remove                remove
   edit                  edit /etc/hosts using \$EDITOR
+  remove                uninstall this sctipt
+  status                find out the current status
+  update                update the list of blocked hosts
+  whitelist             edit whitelist (domains you don't want to block)
   version               output version of installed $DESC and exit
   help                  display this help and exit
 EOF
