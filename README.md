@@ -4,7 +4,7 @@
 
 ```
 wget https://raw.githubusercontent.com/scriptum/hostsblock/master/hostsblock.sh
-sudo ./hostsblock.sh install
+sudo sh hostsblock.sh install
 ```
 
 This is suitable only for Unix-like systems.
