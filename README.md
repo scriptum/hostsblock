@@ -32,7 +32,7 @@ This is a script designed to be as simple as possible that does following:
 1. Installs `/usr/bin/hostsblock` script to manage and update hosts file.
 3. Creates updater script in `/etc/cron.weekly` that updates ads list and generate new `/etc/hosts`. It also checks this github page and updates script automatically, if new version is available.
 
-### How does /etc/hosts works
+### How does /etc/hosts work
 
 Most magic is done by glibc. If some application (web browser etc) wants to download web page it checks DNS record first using glibc call `gethostbyname`. Before sending DNS request, glibc parses `/etc/hosts` and tries to find given host name. If record exists in `/etc/hosts`, it will overwrite DNS record of your ISP. If you add invalid IP address for some domain, e.g. like this:
 
